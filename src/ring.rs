@@ -392,17 +392,36 @@ pub fn window_mapped(model: MouseModel) -> bool {
 }
 
 /// Single-instance guard for the overlay process; `None` means another ring is already open.
+///
+/// The lock file lives in a directory only this user can write: `$XDG_RUNTIME_DIR`, else
+/// `$XDG_STATE_HOME` or `~/.local/state`. Only if none of those is usable does it fall back to a per-user
+/// name in the shared temp dir. It is always created owner-only and opened with `O_NOFOLLOW`, so a
+/// symlink or a file planted by another user is refused instead of followed.
 pub fn acquire_lock() -> Option<std::fs::File> {
     use std::os::fd::AsRawFd;
-    let dir = std::env::var_os("XDG_RUNTIME_DIR")
-        .map(std::path::PathBuf::from)
-        .filter(|p| p.is_absolute())
-        .unwrap_or_else(std::env::temp_dir);
+    use std::os::unix::fs::OpenOptionsExt;
+    let absolute = |name: &str| {
+        std::env::var_os(name)
+            .map(std::path::PathBuf::from)
+            .filter(|p| p.is_absolute())
+    };
+    let path = absolute("XDG_RUNTIME_DIR")
+        .or_else(|| absolute("XDG_STATE_HOME"))
+        .or_else(|| absolute("HOME").map(|home| home.join(".local/state")))
+        .filter(|dir| std::fs::create_dir_all(dir).is_ok())
+        .map(|dir| dir.join("mouse-studio-ring.lock"))
+        .unwrap_or_else(|| {
+            // SAFETY: geteuid has no preconditions and cannot fail.
+            let uid = unsafe { libc::geteuid() };
+            std::env::temp_dir().join(format!("mouse-studio-ring-{uid}.lock"))
+        });
     let file = std::fs::OpenOptions::new()
         .create(true)
         .truncate(false)
         .write(true)
-        .open(dir.join("mouse-studio-ring.lock"))
+        .mode(0o600)
+        .custom_flags(libc::O_NOFOLLOW)
+        .open(path)
         .ok()?;
     // SAFETY: flock on a descriptor we own; the lock ends with the process.
     (unsafe { libc::flock(file.as_raw_fd(), libc::LOCK_EX | libc::LOCK_NB) } == 0).then_some(file)

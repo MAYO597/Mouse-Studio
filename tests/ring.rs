@@ -292,11 +292,27 @@ print('ring passed')
 
 #[test]
 fn only_one_overlay_may_hold_the_lock() {
+    use std::os::unix::fs::{PermissionsExt, symlink};
     // XDG_RUNTIME_DIR is process-global; this is the only test in this file touching it.
     let dir = tempfile::tempdir().unwrap();
     unsafe { std::env::set_var("XDG_RUNTIME_DIR", dir.path()) };
+    let lock = dir.path().join("mouse-studio-ring.lock");
+
     let first = ring::acquire_lock().expect("first lock");
     assert!(ring::acquire_lock().is_none());
+    let mode = std::fs::metadata(&lock).unwrap().permissions().mode() & 0o777;
+    assert_eq!(mode, 0o600, "the lock file must be owner-only");
     drop(first);
     assert!(ring::acquire_lock().is_some());
+
+    // A symlink at the lock path (as another user could plant in a shared directory) is refused, not followed.
+    std::fs::remove_file(&lock).unwrap();
+    let victim = dir.path().join("victim");
+    std::fs::write(&victim, "keep").unwrap();
+    symlink(&victim, &lock).unwrap();
+    assert!(
+        ring::acquire_lock().is_none(),
+        "a symlinked lock path must be refused"
+    );
+    assert_eq!(std::fs::read_to_string(&victim).unwrap(), "keep");
 }
