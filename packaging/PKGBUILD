@@ -1,0 +1,29 @@
+# Maintainer: MAYO597 <244732392+MAYO597@users.noreply.github.com>
+# Local package: build from the project checkout with `scripts/package.sh`.
+# The third-party product images must be present first: run `scripts/fetch-assets.sh`.
+pkgname=mouse-studio
+pkgver=0.1.0
+pkgrel=1
+pkgdesc='Settings interface for Logitech MX Anywhere 3S, Signature M650 L and MX Master 4 (Hyprland)'
+arch=('x86_64')
+license=('custom')
+depends=('gcc-libs' 'glibc' 'libxkbcommon' 'wayland' 'libglvnd')
+optdepends=('hyprland: apply button actions and settings (required for the supported desktop)')
+makedepends=('cargo')
+options=('!lto' '!debug')
+
+build() {
+    cd "$srcdir/project"
+    cargo build --release --locked
+}
+
+package() {
+    cd "$srcdir/project"
+    install -Dm755 target/release/mouse-studio "$pkgdir/usr/bin/mouse-studio"
+    install -Dm644 packaging/70-mouse-studio.rules "$pkgdir/usr/lib/udev/rules.d/70-mouse-studio.rules"
+    install -Dm644 packaging/70-mouse-studio.rules "$pkgdir/usr/share/mouse-studio/packaging/70-mouse-studio.rules"
+    install -Dm755 scripts/install-device-access.sh "$pkgdir/usr/share/mouse-studio/scripts/install-device-access.sh"
+    install -Dm644 packaging/mouse-studio.desktop "$pkgdir/usr/share/applications/mouse-studio.desktop"
+    install -Dm644 packaging/mouse-studio.svg "$pkgdir/usr/share/icons/hicolor/scalable/apps/mouse-studio.svg"
+    install -Dm644 README.md "$pkgdir/usr/share/doc/mouse-studio/README.md"
+}

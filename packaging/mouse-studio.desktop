@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=Mouse Studio
+Comment=Settings for Logitech MX Anywhere 3S, Signature M650 L and MX Master 4
+Exec=mouse-studio
+Icon=mouse-studio
+Terminal=false
+Categories=Settings;HardwareSettings;

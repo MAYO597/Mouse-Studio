@@ -1,0 +1,11 @@
+# Remaining software features
+
+Implement all ten remaining features without unverified HID++ controls. Preserve the graphite/mint default photo UI. New settings default off, old version-1 JSON remains readable, and Save is the point that applies changes.
+
+Profiles gain application-class matches, hold/double-click bindings, timing, precision, gestures and horizontal-scroll combinations. Settings gains automatic application switching; the manually selected profile is the fallback. Reset profile preserves identity and name while resetting its settings. Connection type comes from Linux input bus metadata; USB receivers are labeled as such without claiming an unverified receiver model.
+
+A single Hyprland Lua runtime owns device-filtered press/release binds, non-consuming live monitoring, focus subscriptions and a 20 ms scheduler. It never removes user binds. Hold and double-click defer single clicks when needed; gestures fire on release, precision restores on release/profile change, macros send balanced key taps with delays and can be cancelled. Profile changes cancel pending input/macros. Features survive closing the GUI; optional restore reinstalls after compositor reload. Horizontal-scroll profiles require the owned user service, whose private socket accepts only signed wheel steps and whose virtual pointer emits actual horizontal axis events.
+
+The UI adds trigger tabs, advanced button configuration, application matching and a composed macro editor/test/cancel flow. A gesture test pad classifies movement without executing actions. A fourth schematic 3D view uses a procedural mouse mesh, depth-sorted triangles, drag rotation, wheel zoom, reset and selectable hotspots. Product photos remain the initial view. Live compositor state is read asynchronously for highlights and the current runtime profile.
+
+Validate timings, thresholds, finite sensitivity, app-class uniqueness, macro bounds and conflicting special modes before persistence or desktop mutation. Capture and UI tests use isolated storage/fake backends. Test the generated Lua with a deterministic mock scheduler and exercise the real compositor without dispatching arbitrary user commands. Do not change DPI, battery, SmartShift or wheel mode.

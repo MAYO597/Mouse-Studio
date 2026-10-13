@@ -1,0 +1,4 @@
+# Give the active desktop user access only to the MX Anywhere 3S Bluetooth HID interface.
+SUBSYSTEM=="hidraw", KERNELS=="0005:046D:B037.*", TAG+="uaccess"
+# Bolt C548: only the HID++ configuration interface, not keyboard/mouse HID interfaces.
+SUBSYSTEM=="hidraw", ENV{ID_VENDOR_ID}=="046d", ENV{ID_MODEL_ID}=="c548", ENV{ID_USB_INTERFACE_NUM}=="02", TAG+="uaccess"

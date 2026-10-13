@@ -1,0 +1,14 @@
+# build output
+/target/
+/dist/
+/output/
+
+# third-party images, fetched by scripts/fetch-assets.sh (see assets/README.md); not redistributed here
+/assets/mouse-3qtr-front.png
+/assets/mouse-3qtr-back.png
+/assets/mouse-top-view.png
+/assets/mouse-side-left.png
+/assets/mx-master-4/
+/assets/m650-l/
+/assets/vscode-stable.png
+/assets/vscode.png
